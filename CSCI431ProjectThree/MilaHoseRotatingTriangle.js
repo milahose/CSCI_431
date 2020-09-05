@@ -59,7 +59,6 @@ window.onload = function init() {
         break;
       case 3:
         fcolor = vec4(1.0, 0.0, 0.0, 1.0);
-        console.log('fcolor', fcolor)
         break;
       case 4:
         fcolor = vec4(0.0, 1.0, 0.0, 1.0);
