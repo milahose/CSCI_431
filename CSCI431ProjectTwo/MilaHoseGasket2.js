@@ -71,9 +71,9 @@ function divideTriangle( a, b, c, count )
     else {
 
         //bisect the sides
-        var ab = mix( a, b, 0.46329602498750287 );
-        var ac = mix( a, c, 0.8421880320858605 );
-        var bc = mix( b, c, 0.3513568233546864 );
+        var ab = mix( a, b, Math.random() );
+        var ac = mix( a, c, Math.random() );
+        var bc = mix( b, c, Math.random() );
 
         --count;
 
