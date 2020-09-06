@@ -3,7 +3,7 @@
 var canvas;
 var gl;
 
-var NumVertices = 36;
+var NumVertices = 12;
 
 var points = [];
 var colors = [];
@@ -48,7 +48,7 @@ window.onload = function init() {
 
 
   const vPosition = gl.getAttribLocation(program, 'vPosition');
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vPosition);
 
   thetaLoc = gl.getUniformLocation(program, 'theta');
@@ -62,46 +62,31 @@ window.onload = function init() {
 }
 
 function colorCube() {
-  quad(1, 0, 3, 2);
-  quad(2, 3, 7, 6);
-  quad(3, 0, 4, 7);
-  quad(6, 5, 1, 2);
-  quad(4, 5, 6, 7);
-  quad(5, 4, 0, 1);
+  triple(1, 0, 2);
+  triple(2, 3, 1);
+  triple(3, 0, 1);
+  triple(0, 2, 3);
 }
 
-function quad(a, b, c, d) {
+function triple(a, b, c) {
   const vertices = [
-    vec4( -0.5, -0.5,  0.5, 1.0 ),
-    vec4( -0.5,  0.5,  0.5, 1.0 ),
-    vec4(  0.5,  0.5,  0.5, 1.0 ),
-    vec4(  0.5, -0.5,  0.5, 1.0 ),
-    vec4( -0.5, -0.5, -0.5, 1.0 ),
-    vec4( -0.5,  0.5, -0.5, 1.0 ),
-    vec4(  0.5,  0.5, -0.5, 1.0 ),
-    vec4(  0.5, -0.5, -0.5, 1.0 )
+    vec3(0.5, -0.2722,  0.2886),
+    vec3(0.0,  -0.2772,  -0.5773),
+    vec3(-0.5,  -0.22772,  0.2886),
+    vec3(0.0, 0.5443,  0.0),
   ];
 
   const vertexColors = [
-    [0.0, 0.0, 0.0, 1.0],  // black
-    [1.0, 0.0, 0.0, 1.0],  // red
-    [1.0, 1.0, 0.0, 1.0],  // yellow
-    [0.0, 1.0, 0.0, 1.0],  // green
-    [0.0, 0.0, 1.0, 1.0],  // blue
-    [1.0, 0.0, 1.0, 1.0],  // magenta
-    [0.0, 1.0, 1.0, 1.0],  // cyan
-    [1.0, 1.0, 1.0, 1.0]   // white
+    [ 0.0, 0.0, 0.0, 1.0 ],  // black
+    [ 1.0, 0.0, 0.0, 1.0 ],  // red
+    [ 0.0, 1.0, 0.0, 1.0 ],  // green
+    [ 0.0, 0.0, 1.0, 1.0 ],  // blue
   ];
 
-  // We need to parition the quad into two triangles in order for
-  // WebGL to be able to render it.  In this case, we create two
-  // triangles from the quad indices
-
-  //vertex color assigned by the index of the vertex
-  const indices = [ a, b, c, a, c, d ];
+  // vertex color assigned by the index of the vertex
+  const indices = [a, b, c];
   for (let i = 0; i < indices.length; ++i) {
     points.push( vertices[indices[i]] );
-    //colors.push( vertexColors[indices[i]] );
 
     // for solid colored faces use
     colors.push(vertexColors[a]);
