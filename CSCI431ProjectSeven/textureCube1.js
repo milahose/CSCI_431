@@ -15,34 +15,30 @@ var texCoordsArray = [];
 
 var texture;
 
-var texCoord = [
-    vec2(0, 0),
-    vec2(0, 1),
-    vec2(1, 1),
-    vec2(1, 0)
+const texCoord = [
+	vec2(0, 0),
+	vec2(0, 1),
+	vec2(1, 1),
+	vec2(1, 0)
 ];
 
-var vertices = [
-    vec4( -0.5, -0.5,  0.5, 1.0 ),
-    vec4( -0.5,  0.5,  0.5, 1.0 ),
-    vec4( 0.5,  0.5,  0.5, 1.0 ),
-    vec4( 0.5, -0.5,  0.5, 1.0 ),
-    vec4( -0.5, -0.5, -0.5, 1.0 ),
-    vec4( -0.5,  0.5, -0.5, 1.0 ),
-    vec4( 0.5,  0.5, -0.5, 1.0 ),
-    vec4( 0.5, -0.5, -0.5, 1.0 )
+const vertices = [
+  vec4(0.5, -0.2722, 0.2886),
+  vec4(0.0, -0.2772, -0.5773),
+  vec4(-0.5, -0.22772, 0.2886),
+  vec4( 0.0, 0.5443, 0.0)
 ];
 
 var vertexColors = [
-    vec4( 0.0, 0.0, 0.0, 1.0 ),  // black
-    vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
-    vec4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
-    vec4( 0.0, 1.0, 0.0, 1.0 ),  // green
-    vec4( 0.0, 0.0, 1.0, 1.0 ),  // blue
-    vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
-    vec4( 0.0, 1.0, 1.0, 1.0 ),  // white
-    vec4( 0.0, 1.0, 1.0, 1.0 )   // cyan
-];
+	vec4( 1.0, 0.0, 0.0, 1.0 ), // red
+	vec4( 1.0, 1.0, 0.0, 1.0 ), // yellow
+	vec4( 0.0, 1.0, 0.0, 1.0 ), // green
+	vec4( 0.0, 0.0, 1.0, 1.0 ), // blue
+	vec4( 1.0, 0.0, 1.0, 1.0 ), // magenta
+	vec4( 0.0, 1.0, 1.0, 1.0 ), // white
+	vec4( 0.0, 1.0, 1.0, 1.0 ), // cyan
+	vec4( 0.0, 0.0, 0.0, 1.0 )  // black
+];  
 
 var xAxis = 0;
 var yAxis = 1;
@@ -67,41 +63,25 @@ function configureTexture( image ) {
 }
 
 
-function quad(a, b, c, d) {
-     pointsArray.push(vertices[a]);
-     colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[0]);
+const triple = (a, b, c) => {
+	pointsArray.push(vertices[a]); 
+	colorsArray.push(vertexColors[a]); 
+	texCoordsArray.push(texCoord[0]);
 
-     pointsArray.push(vertices[b]);
-     colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[1]);
+	pointsArray.push(vertices[b]); 
+	colorsArray.push(vertexColors[a]);
+	texCoordsArray.push(texCoord[1]); 
 
-     pointsArray.push(vertices[c]);
-     colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[2]);
-
-     pointsArray.push(vertices[a]);
-     colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[0]);
-
-     pointsArray.push(vertices[c]);
-     colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[2]);
-
-     pointsArray.push(vertices[d]);
-     colorsArray.push(vertexColors[a]);
-     texCoordsArray.push(texCoord[3]);
+	pointsArray.push(vertices[c]); 
+	colorsArray.push(vertexColors[a]);
+	texCoordsArray.push(texCoord[2]); 
 }
 
-
-function colorCube()
-{
-    quad( 1, 0, 3, 2 );
-    quad( 2, 3, 7, 6 );
-    quad( 3, 0, 4, 7 );
-    quad( 6, 5, 1, 2 );
-    quad( 4, 5, 6, 7 );
-    quad( 5, 4, 0, 1 );
+const colorPyramid = () => {  
+	triple( 1, 0, 2);
+  triple( 2, 3, 1);
+  triple( 3, 0, 1);
+  triple( 0, 2, 3);
 }
 
 
@@ -123,7 +103,7 @@ window.onload = function init() {
     program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-    colorCube();
+    colorPyramid();
 
     var cBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
@@ -178,6 +158,6 @@ var render = function(){
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     theta[axis] += 2.0;
     gl.uniform3fv(thetaLoc, flatten(theta));
-    gl.drawArrays( gl.TRIANGLES, 0, numVertices );
+    gl.drawArrays(gl.TRIANGLES, 0, pointsArray.length);
     requestAnimFrame(render);
 }
