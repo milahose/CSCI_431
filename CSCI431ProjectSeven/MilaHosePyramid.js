@@ -94,11 +94,6 @@ const configureTexture = () => {
 }
 
 const triple = (a, b, c) => {
-	const t1 = subtract(vertices[b], vertices[a]);
-  const t2 = subtract(vertices[c], vertices[b]);
-  let normal = cross(t1, t2);
-  normal = vec3(normal);
-	 
 	pointsArray.push(vertices[a]); 
 	colorsArray.push(vertexColors[a]); 
 	texCoordsArray.push(texCoord[0]);
