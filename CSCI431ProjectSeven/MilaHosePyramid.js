@@ -65,14 +65,14 @@ const vertices = [
 ];
 
 var vertexColors = [
-	vec4( 0.0, 0.0, 0.0, 1.0 ), // black
 	vec4( 1.0, 0.0, 0.0, 1.0 ), // red
 	vec4( 1.0, 1.0, 0.0, 1.0 ), // yellow
 	vec4( 0.0, 1.0, 0.0, 1.0 ), // green
 	vec4( 0.0, 0.0, 1.0, 1.0 ), // blue
 	vec4( 1.0, 0.0, 1.0, 1.0 ), // magenta
 	vec4( 0.0, 1.0, 1.0, 1.0 ), // white
-	vec4( 0.0, 1.0, 1.0, 1.0 )  // cyan
+	vec4( 0.0, 1.0, 1.0, 1.0 ), // cyan
+	vec4( 0.0, 0.0, 0.0, 1.0 )  // black
 ];    
 
 const configureTexture = () => {
@@ -104,11 +104,11 @@ const triple = (a, b, c) => {
 	texCoordsArray.push(texCoord[0]);
 
 	pointsArray.push(vertices[b]); 
-	colorsArray.push(vertexColors[b]);
+	colorsArray.push(vertexColors[a]);
 	texCoordsArray.push(texCoord[1]); 
 
 	pointsArray.push(vertices[c]); 
-	colorsArray.push(vertexColors[c]);
+	colorsArray.push(vertexColors[a]);
 	texCoordsArray.push(texCoord[2]); 
 }
 
