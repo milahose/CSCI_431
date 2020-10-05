@@ -35,17 +35,17 @@ var xAxis = 0;
 var yAxis = 1;
 var zAxis = 2;
 var axis = xAxis;
-var theta = [45.0, 45.0, 45.0];
+var theta = [0, 0, 0];
 
 var thetaLoc;
 
 var textures = []; // changed
 var images = [];
-var imageNames = ["texImage1", "texImage2", "texImage3", "texImage4", "texImage5", "texImage6",
-                  "texImage7", "texImage8", "texImage9", "texImage10", "texImage11", "texImage12"];
+var imageNames = ["texImage1", "texImage2", "texImage3", "texImage4", 
+                  "texImage5", "texImage6", "texImage7", "texImage8"];
 
 function configureTexture( images ) {
-    for(i = 0; i < 12; i++){
+    for(i = 0; i < 4; i++){
         var texture = gl.createTexture();
         gl.bindTexture( gl.TEXTURE_2D, texture );
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -114,7 +114,7 @@ window.onload = function init() {
     gl.vertexAttribPointer( vTexCoord, 2, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vTexCoord );
 
-    for(i = 0; i < 12; i++){ // generate image arrays
+    for(i = 0; i < 4; i++){ // generate image arrays
         var image = document.getElementById(imageNames[i]);
         images.push(image);
     }
@@ -139,24 +139,10 @@ var render = function(){
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     theta[axis] += 2.0;
     gl.uniform3fv(thetaLoc, flatten(theta));
-    if(magic){
-        theta[0] += 30;
-        theta[1] += 30;
-        theta[2] += 30;
-        count++;
-        if(count == 100)
-            start = (start + 6)%12;
-        if(count == 200){
-            magic = false;
-            axis = (axis+1)%3;
-            count = 0;
-        }
-            
-    }
 
-    for(i = 0; i < 6; i++){ // bind different textures to draw
+    for (let i = 0; i < 6; i++){ // bind different textures to draw
         gl.bindTexture( gl.TEXTURE_2D, textures[i+start] );
-        gl.drawArrays( gl.TRIANGLES, 6*i, 6 ); // third argument is how many points to draw
+        gl.drawArrays( gl.TRIANGLES, 3*i, 3 ); // third argument is how many points to draw
     }
     requestAnimFrame(render);
 }
