@@ -17,21 +17,18 @@ var count = 0;
 
 var start = 0; // start index for six cards
 
-var texCoord = [
-    vec2(0, 0),
-    vec2(0, 1),
-    vec2(1, 1),
-    vec2(1, 0)
+const texCoord = [
+	vec2(0, 0),
+	vec2(0, 1),
+	vec2(1, 1),
+	vec2(1, 0)
 ];
-var vertices = [
-    vec4( -0.5, -0.5,  0.5, 1.0 ),
-    vec4( -0.5,  0.5,  0.5, 1.0 ),
-    vec4( 0.5,  0.5,  0.5, 1.0 ),
-    vec4( 0.5, -0.5,  0.5, 1.0 ),
-    vec4( -0.5, -0.5, -0.5, 1.0 ),
-    vec4( -0.5,  0.5, -0.5, 1.0 ),
-    vec4( 0.5,  0.5, -0.5, 1.0 ),
-    vec4( 0.5, -0.5, -0.5, 1.0 )
+
+const vertices = [
+  vec4(0.5, -0.2722, 0.2886),
+  vec4(0.0, -0.2772, -0.5773),
+  vec4(-0.5, -0.22772, 0.2886),
+  vec4( 0.0, 0.5443, 0.0)
 ];
 
 var xAxis = 0;
@@ -62,28 +59,22 @@ function configureTexture( images ) {
     }
 }
 
-function quad(a, b, c, d) {
-     pointsArray.push(vertices[a]);
-     texCoordsArray.push(texCoord[0]);
-     pointsArray.push(vertices[b]);
-     texCoordsArray.push(texCoord[1]);
-     pointsArray.push(vertices[c]);
-     texCoordsArray.push(texCoord[2]);
-     pointsArray.push(vertices[a]);
-     texCoordsArray.push(texCoord[0]);
-     pointsArray.push(vertices[c]);
-     texCoordsArray.push(texCoord[2]);
-     pointsArray.push(vertices[d]);
-     texCoordsArray.push(texCoord[3]);
+const triple = (a, b, c) => {
+	pointsArray.push(vertices[a]);  
+	texCoordsArray.push(texCoord[0]);
+
+	pointsArray.push(vertices[b]);
+	texCoordsArray.push(texCoord[1]); 
+
+	pointsArray.push(vertices[c]); 
+	texCoordsArray.push(texCoord[2]); 
 }
-function colorCube()
-{
-    quad( 1, 0, 3, 2 );
-    quad( 4, 5, 6, 7 ); 
-    quad( 2, 3, 7, 6 );
-    quad( 5, 4, 0, 1 ); 
-    quad( 3, 0, 4, 7 );
-    quad( 6, 5, 1, 2 ); 
+
+const colorPyramid = () => {  
+	triple( 1, 0, 2);
+  triple( 2, 3, 1);
+  triple( 3, 0, 1);
+  triple( 0, 2, 3);
 }
 
 
@@ -105,7 +96,7 @@ window.onload = function init() {
     program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-    colorCube();
+    colorPyramid();
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
