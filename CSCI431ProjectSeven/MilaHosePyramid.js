@@ -179,11 +179,6 @@ const render = function() {
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
           
   if (flag) theta[axis] += 2.0;
-          
-  modelView = mat4();
-  modelView = mult(modelView, rotate(theta[xAxis], [1, 0, 0] ));
-  modelView = mult(modelView, rotate(theta[yAxis], [0, 1, 0] ));
-	modelView = mult(modelView, rotate(theta[zAxis], [0, 0, 1] ));
 	
 	gl.uniform3fv(thetaLoc, theta);
 	gl.drawArrays(gl.TRIANGLES, 0, pointsArray.length);
