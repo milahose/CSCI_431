@@ -1,79 +1,81 @@
-<!DOCTYPE html>
-<html>
-<style type="text/css">
-    canvas { background: blue; }
-</style>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Computer Graphics Project 7 Extra Credit</title>
 
-<script id="vertex-shader" type="x-shader/x-vertex">
-attribute  vec4 vPosition;
-attribute  vec2 vTexCoord;
-varying vec2 fTexCoord;
-uniform vec3 theta;
-void main(){
-    vec3 angles = radians( theta );
-    vec3 c = cos( angles );
-    vec3 s = sin( angles );
-    mat4 rx = mat4( 1.0,  0.0,  0.0, 0.0,
-		    0.0,  c.x,  s.x, 0.0,
-		    0.0, -s.x,  c.x, 0.0,
-		    0.0,  0.0,  0.0, 1.0 );
-    mat4 ry = mat4( c.y, 0.0, -s.y, 0.0,
-		    0.0, 1.0,  0.0, 0.0,
-		    s.y, 0.0,  c.y, 0.0,
-		    0.0, 0.0,  0.0, 1.0 );
-    mat4 rz = mat4( c.z, s.z, 0.0, 0.0,
-		    -s.z,  c.z, 0.0, 0.0,
-		    0.0,  0.0, 1.0, 0.0,
-            0.0,  0.0, 0.0, 1.0 );     
-    gl_Position = rz * ry * rx * vPosition;
-    fTexCoord = vTexCoord;
-}
-</script>
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec4 vPosition;
+    attribute vec4 vColor;
+    attribute vec2 vTexCoord;
+    varying vec2 fTexCoord;
+    uniform vec3 theta;
+    
+    void main() {
+      // Compute the sines and cosines of theta for each of
+      // the three axes in one computation.
+      vec3 angles = radians(theta);
+      vec3 c = cos(angles);
+      vec3 s = sin(angles);
+  
+      // these matrices are column-major
+      mat4 rx = mat4( 
+        1.0,  0.0,  0.0, 0.0,
+        0.0,  c.x,  s.x, 0.0,
+        0.0, -s.x,  c.x, 0.0,
+        0.0,  0.0,  0.0, 1.0
+      );
+  
+      mat4 ry = mat4(
+        c.y, 0.0, -s.y, 0.0,
+        0.0, 1.0,  0.0, 0.0,
+        s.y, 0.0,  c.y, 0.0,
+        0.0, 0.0,  0.0, 1.0
+      );
+  
+      mat4 rz = mat4( 
+        c.z, s.z, 0.0, 0.0,
+        -s.z,  c.z, 0.0, 0.0,
+        0.0,  0.0, 1.0, 0.0,
+        0.0,  0.0, 0.0, 1.0
+      );
+  
+      fTexCoord = vTexCoord;
+      gl_Position = rz * ry * rx * vPosition;
+      gl_Position.z = -gl_Position.z;
+    }
+  </script>
+    
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    varying vec2 fTexCoord;
+    uniform sampler2D texture;
+    
+    void main() {
+      gl_FragColor = texture2D( texture, fTexCoord ); 
+    }
+  </script>
 
-<script id="fragment-shader" type="x-shader/x-fragment">
+  <script type="text/javascript" src="webgl-utils.js"></script>
+  <script type="text/javascript" src="initShaders.js"></script>
+  <script type="text/javascript" src="MV.js"></script>
+  <script type="text/javascript" src="magicHelp.js"></script>
+</head>
+  <body>
+    <canvas id="gl-canvas" width="512" height="512">
+      Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
 
-precision mediump float;
+    <img id = "texImage1" src = "mountain.jpg" hidden />
+    <img id = "texImage2" src = "bricks.png" hidden />
+    <img id = "texImage3" src = "ape.gif" hidden />
+    <img id = "texImage4" src = "stars.gif" hidden />
 
-varying  vec2 fTexCoord;
-
-uniform sampler2D texture;
-
-void
-main()
-{
-    gl_FragColor = texture2D( texture, fTexCoord );
-}
-</script>
-
-<script type="text/javascript" src="webgl-utils.js"></script>
-<script type="text/javascript" src="initShaders.js"></script>
-<script type="text/javascript" src="MV.js"></script>
-<script type="text/javascript" src="magicHelp.js"></script>
-
-
-<body>
-<canvas id="gl-canvas" width="512" height="512">
-Oops ... your browser doesn't support the HTML5 canvas element
-</canvas>
-<button id = "ButtonX">Rotate X</button>
-<button id = "ButtonY">Rotate Y</button>
-<button id = "ButtonZ">Rotate Z</button>
-<button id = "DoneButton">Show Magic</button>
-<p>Remember one of six cards. You may press the button to change the rotate of the cube 
-   to help you choose a card to remember. After you choose a card, click on "Show Magic" button. 
-   After a crazy rotation, when it slows down, your card is gone!!!
-</p>
-<img id = "texImage1" src = "mountain.jpg" hidden></img>
-<img id = "texImage2" src = "bricks.png" hidden></img>
-<img id = "texImage3" src = "ape.gif" hidden></img>
-<img id = "texImage4" src = "qd.gif" hidden></img>
-<img id = "texImage5" src = "jc.gif" hidden></img>
-<img id = "texImage6" src = "jd.gif" hidden></img>
-<img id = "texImage7" src = "kd.gif" hidden></img>
-<img id = "texImage8" src = "kc.gif" hidden></img>
-<img id = "texImage9" src = "qs.gif" hidden></img>
-<img id = "texImage10" src = "qh.gif" hidden></img>
-<img id = "texImage11" src = "js.gif" hidden></img>
-<img id = "texImage12" src = "jh.gif" hidden></img>
-</body>
+    <div>
+      <button id="ButtonX">Rotate X</button>
+      <button id="ButtonY">Rotate Y</button>
+      <button id="ButtonZ">Rotate Z</button>
+      <button id="ButtonT">Toggle Rotation</button>
+    </div>
+  </body>
 </html>

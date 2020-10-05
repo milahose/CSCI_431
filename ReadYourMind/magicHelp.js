@@ -123,14 +123,11 @@ window.onload = function init() {
 
     thetaLoc = gl.getUniformLocation(program, "theta");
 
-    document.getElementById("ButtonX").onclick = function(){axis = xAxis;};
-    document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
-    document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
-    document.getElementById("DoneButton").onclick = function(){
-        magic = true;
-        count = 0;
-        //start = (start + 6)%12
-    };
+    document.getElementById('ButtonX').onclick = () => (axis = xAxis);
+	document.getElementById('ButtonY').onclick = () => (axis = yAxis);
+	document.getElementById('ButtonZ').onclick = () => (axis = zAxis);
+    document.getElementById('ButtonT').onclick = () => (flag = !flag);
+    
     render();
 
 }
