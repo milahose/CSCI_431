@@ -133,13 +133,13 @@ window.onload = function init() {
 }
 
 var render = function(){
-    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    theta[axis] += 2.0;
-    gl.uniform3fv(thetaLoc, flatten(theta));
+  gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  theta[axis] += 2.0;
+  gl.uniform3fv(thetaLoc, flatten(theta));
 
-    for (let i = 0; i < 6; i++){ // bind different textures to draw
-        gl.bindTexture( gl.TEXTURE_2D, textures[i+start] );
-        gl.drawArrays( gl.TRIANGLES, 3*i, 3 ); // third argument is how many points to draw
-    }
-    requestAnimFrame(render);
+  for (let i = 0; i < 4; i++) { 
+    gl.bindTexture( gl.TEXTURE_2D, textures[i] );
+    gl.drawArrays( gl.TRIANGLES, 3 * i, 3 ); 
+  }
+  requestAnimFrame(render);
 }
