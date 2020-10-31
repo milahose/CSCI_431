@@ -13,7 +13,6 @@ var h_loc;
 var hue_deg = 0.0;
 var sat_pc = 0.0;
 var val_pc = 0.0;
-var gamma = 1.0;
 let pa, pb, pc;
 let paBuffer, pbBuffer, pcBuffer;
 
@@ -104,94 +103,77 @@ window.onload = () => {
 	gl.uniform1f (chosen_g_loc, 1.0);
 	
 	// ======= Click Event Stuff ======= // 
-	canvas.onmousedown = function (ev) {
+	canvas.onmousedown = e => {
 		get_pixel_flag = true;
-		// recursively get location within parent(s)
 		var element = canvas;
 		var top = 0;
 		var left = 0;
-		while (element && element.tagName != 'BODY') {
+		while (element && element.tagName !== 'body') {
 			top += element.offsetTop;
 			left += element.offsetLeft;
 			element = element.offsetParent;
 		}
-		// adjust for scrolling
 		left += window.pageXOffset;
 		top -= window.pageYOffset;
-		colour_x = ev.clientX - left;
-		colour_y = (ev.clientY - top);
-		// sometimes range is a few pixels too big
-		if (colour_x >= canvas.width) {
+		colour_x = e.clientX - left;
+		colour_y = (e.clientY - top);
+
+		if (colour_x >= canvas.width || colour_y >= canvas.height) {
 			return;
 		}
-		if (colour_y >= canvas.height) {
-			return;
-		}
-		main_loop ();
+		render();
 	}
-	document.onmouseup = function (ev) {
+	document.onmouseup = () => {
 		get_pixel_flag = false;
-		main_loop ();
+		render();
 	}
-	canvas.onmousemove = function (ev) {
-		if (!get_pixel_flag) {
-			return;
-		}
-		// recursively get location within parent(s)
+	canvas.onmousemove = e => {
+		if (!get_pixel_flag) return;
 		var element = canvas;
 		var top = 0;
 		var left = 0;
-		while (element && element.tagName != 'BODY') {
+		while (element && element.tagName !== 'body') {
 			top += element.offsetTop;
 			left += element.offsetLeft;
 			element = element.offsetParent;
 		}
-		// adjust for scrolling
 		left += window.pageXOffset;
 		top -= window.pageYOffset;
-		colour_x = ev.clientX - left;
-		colour_y = (ev.clientY - top);
-		// sometimes range is a few pixels too big
-		if (colour_x >= canvas.width) {
+		colour_x = e.clientX - left;
+		colour_y = (e.clientY - top);
+		if (colour_x >= canvas.width || colour_y >= canvas.height) {
 			return;
 		}
-		if (colour_y >= canvas.height) {
-			return;
-		}
-		main_loop ();
+		render();
 	}
 
-	main_loop ();
+	render();
 }
 
-function main_loop () {
-	gl.enable (gl.CULL_FACE); // enable culling of faces
-	gl.cullFace (gl.BACK);
-	gl.frontFace (gl.CCW);
-
-	gl.useProgram (pa);
-	gl.bindBuffer (gl.ARRAY_BUFFER, paBuffer);
-	gl.vertexAttribPointer (0, 2, gl.FLOAT, false, 8, 0);
-	gl.enableVertexAttribArray (0);
-	gl.drawArrays (gl.TRIANGLES, 0, 6);
-	gl.disableVertexAttribArray (0);
+function render() {
+	gl.useProgram(pa);
+	gl.bindBuffer(gl.ARRAY_BUFFER, paBuffer);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.disableVertexAttribArray(0);
 	
-	gl.useProgram (pb);
-	gl.bindBuffer (gl.ARRAY_BUFFER, pbBuffer);
-	gl.vertexAttribPointer (0, 2, gl.FLOAT, false, 20, 0);
-	gl.vertexAttribPointer (1, 3, gl.FLOAT, false, 20, 8);
-	gl.enableVertexAttribArray (0);
-	gl.enableVertexAttribArray (1);
-	gl.drawArrays (gl.TRIANGLE_STRIP, 0, 14);
-	gl.disableVertexAttribArray (0);
-	gl.disableVertexAttribArray (1);
+	gl.useProgram(pb);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pbBuffer);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 20, 0);
+	gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 20, 8);
+	gl.enableVertexAttribArray(0);
+	gl.enableVertexAttribArray(1);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 14);
+	gl.disableVertexAttribArray(0);
+	gl.disableVertexAttribArray(1);
 	
-	gl.useProgram (pc);
-	gl.bindBuffer (gl.ARRAY_BUFFER, pcBuffer);
-	gl.vertexAttribPointer (0, 2, gl.FLOAT, false, 8, 0);
-	gl.enableVertexAttribArray (0);
-	gl.drawArrays (gl.TRIANGLES, 0, 6);
-	gl.disableVertexAttribArray (0);
+	gl.useProgram(pc);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pcBuffer);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.disableVertexAttribArray(0);
 
 	if (get_pixel_flag) {
 		// hue picker
