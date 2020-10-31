@@ -1,0 +1,100 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Graphics Project 9</title>
+
+    <script id="vertex-shader-a" type="x-shader/x-vertex">
+      attribute vec2 p;
+      varying vec2 vs;
+      void main () {
+        vs.x = 0.5 * (p.x + 1.0);
+        vs.y = 0.5 * (p.y + 1.0);
+        gl_Position = vec4 (p.x * 0.75 - 0.25, p.y * 0.75 + 0.25, 0.0, 1.0);
+      }
+    </script>
+
+    <script id="fragment-shader-a" type="x-shader/x-fragment">
+      precision mediump float;
+      uniform float h;
+      uniform float g;
+      varying vec2 vs;
+
+      void main () {
+        float chroma = vs.x * vs.y;
+        float h_dash = h / 60.0;
+        float x = chroma * (1.0 - abs (mod (h_dash, 2.0) - 1.0));
+        vec3 rgb = vec3 (0.0, 0.0, 0.0);
+
+        if (h_dash < 1.0) {
+          rgb.r = chroma;
+          rgb.g = x;
+        } else if (h_dash < 2.0) {
+          rgb.r = x;
+          rgb.g = chroma;
+        } else if (h_dash < 3.0) {
+          rgb.g = chroma;
+          rgb.b = x;
+        } else if (h_dash < 4.0) {
+          rgb.g = x;
+          rgb.b = chroma;
+        } else if (h_dash < 5.0) {
+          rgb.r = x;
+          rgb.b = chroma;
+        } else {
+          rgb.r = chroma;
+          rgb.b = x;
+        }
+
+        float minv = vs.x - chroma;
+        rgb += minv;
+        vec3 gamma = vec3 (g, g, g);
+
+        gl_FragColor = vec4 (pow (rgb, 1.0 / gamma), 1.0);
+      }
+    </script>
+
+    <script id="vertex-shader-b" type="x-shader/x-vertex">
+      attribute vec2 p;
+      attribute vec3 c;
+      varying vec3 fc;
+      void main () {
+        fc = c;
+        gl_Position = vec4 (p.x * 0.125 + 0.875, p.y * 0.75 + 0.25, 0.0, 1.0);
+      }
+    </script>
+
+    <script id="fragment-shader-b" type="x-shader/x-fragment">
+      precision mediump float;
+      varying vec3 fc;
+      uniform float g;
+      void main () {
+        vec3 gamma = vec3 (g, g, g);
+        gl_FragColor = vec4 (pow (fc, 1.0 / gamma), 1.0);
+      }
+    </script>
+  </head>
+  <body>
+    <h2 style="text-align: center;">Color Picker</h2>
+    
+    <div style="text-align: center;">
+      <canvas id="gl-canvas" width=256 height=256>
+        Oops ... your browser doesn't support the HTML5 canvas element
+      </canvas>
+
+      <p>
+        <strong>RGB Code</strong>: <span id="rgb">0, 0, 0</span>
+      </p>
+
+      <p>
+        <strong>Hex Code</strong>: <span id="hex">#000000</span>
+      </p>
+    </div>
+
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="initShaders.js"></script>
+    <script type="text/javascript" src="MV.js"></script>
+    <script src="colour_widget.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
