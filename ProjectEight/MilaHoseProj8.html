@@ -2,7 +2,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Computer Graphics Project 9</title>
+    <title>Computer Graphics Project 8</title>
 
     <script id="vertex-shader-a" type="x-shader/x-vertex">
       attribute vec2 p;
@@ -67,6 +67,23 @@
     <script id="fragment-shader-b" type="x-shader/x-fragment">
       precision mediump float;
       varying vec3 fc;
+      uniform float g;
+      void main () {
+        vec3 gamma = vec3 (g, g, g);
+        gl_FragColor = vec4 (pow (fc, 1.0 / gamma), 1.0);
+      }
+    </script>
+
+    <script id="vertex-shader-c" type="x-shader/x-vertex">
+      attribute vec2 p;
+      void main () {
+        gl_Position = vec4 (p.x, p.y * 0.2 - 0.75, 0.0, 1.0);
+      }
+    </script>
+
+    <script id="fragment-shader-c" type="x-shader/x-fragment">
+      precision mediump float;
+      uniform vec3 fc;
       uniform float g;
       void main () {
         vec3 gamma = vec3 (g, g, g);
