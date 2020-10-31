@@ -5,12 +5,12 @@
     <title>Computer Graphics Project 8</title>
 
     <script id="vertex-shader-a" type="x-shader/x-vertex">
-      attribute vec2 p;
+      attribute vec2 point;
       varying vec2 vs;
       void main () {
-        vs.x = 0.5 * (p.x + 1.0);
-        vs.y = 0.5 * (p.y + 1.0);
-        gl_Position = vec4 (p.x * 0.75 - 0.25, p.y * 0.75 + 0.25, 0.0, 1.0);
+        vs.x = 0.5 * (point.x + 1.0);
+        vs.y = 0.5 * (point.y + 1.0);
+        gl_Position = vec4 (point.x * 0.75 - 0.25, point.y * 0.75 + 0.25, 0.0, 1.0);
       }
     </script>
 
@@ -22,23 +22,23 @@
 
       void main () {
         float saturation = vs.x * vs.y;
-        float h_dash = h / 60.0;
+        float scale = h / 60.0;
         vec3 rgb = vec3 (0.0, 0.0, 0.0);
-        float x = saturation * (1.0 - abs (mod (h_dash, 2.0) - 1.0));
+        float x = saturation * (1.0 - abs (mod(scale, 2.0) - 1.0));
 
-        if (h_dash < 1.0) {
+        if (scale < 1.0) {
           rgb.r = saturation;
           rgb.g = x;
-        } else if (h_dash < 2.0) {
+        } else if (scale < 2.0) {
           rgb.r = x;
           rgb.g = saturation;
-        } else if (h_dash < 3.0) {
+        } else if (scale < 3.0) {
           rgb.g = saturation;
           rgb.b = x;
-        } else if (h_dash < 4.0) {
+        } else if (scale < 4.0) {
           rgb.g = x;
           rgb.b = saturation;
-        } else if (h_dash < 5.0) {
+        } else if (scale < 5.0) {
           rgb.r = x;
           rgb.b = saturation;
         } else {
@@ -46,11 +46,10 @@
           rgb.b = x;
         }
 
-        float minv = vs.x - saturation;
-        rgb += minv;
-        vec3 gamma = vec3 (g, g, g);
+        rgb += vs.x - saturation;
+        vec3 gamma = vec3(g, g, g);
 
-        gl_FragColor = vec4 (pow (rgb, 1.0 / gamma), 1.0);
+        gl_FragColor = vec4(pow(rgb, 1.0 / gamma), 1.0);
       }
     </script>
 
@@ -60,7 +59,7 @@
       varying vec3 fc;
       void main () {
         fc = c;
-        gl_Position = vec4 (p.x * 0.125 + 0.875, p.y * 0.75 + 0.25, 0.0, 1.0);
+        gl_Position = vec4(p.x * 0.125 + 0.875, p.y * 0.75 + 0.25, 0.0, 1.0);
       }
     </script>
 
@@ -69,15 +68,15 @@
       varying vec3 fc;
       uniform float g;
       void main () {
-        vec3 gamma = vec3 (g, g, g);
-        gl_FragColor = vec4 (pow (fc, 1.0 / gamma), 1.0);
+        vec3 gamma = vec3(g, g, g);
+        gl_FragColor = vec4(pow (fc, 1.0 / gamma), 1.0);
       }
     </script>
 
     <script id="vertex-shader-c" type="x-shader/x-vertex">
       attribute vec2 p;
       void main () {
-        gl_Position = vec4 (p.x, p.y * 0.2 - 0.75, 0.0, 1.0);
+        gl_Position = vec4(p.x, p.y * 0.2 - 0.75, 0.0, 1.0);
       }
     </script>
 
@@ -86,8 +85,8 @@
       uniform vec3 fc;
       uniform float g;
       void main () {
-        vec3 gamma = vec3 (g, g, g);
-        gl_FragColor = vec4 (pow (fc, 1.0 / gamma), 1.0);
+        vec3 gamma = vec3(g, g, g);
+        gl_FragColor = vec4(pow (fc, 1.0 / gamma), 1.0);
       }
     </script>
   </head>

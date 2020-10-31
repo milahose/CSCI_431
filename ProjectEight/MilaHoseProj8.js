@@ -1,21 +1,12 @@
 'use strict';
 
-let gl; 
-let canvas;
-
-let flag = false;
-var chosen_fc_loc;
-let box_g_loc;
-let hue_g_loc;
-let chosen_g_loc;
-let h_loc;
-let hue = 0.0;
-let sat_pc = 0.0;
-let val_pc = 0.0;
-
-let pa, pb, pc;
 let color = {};
+let pa, pb, pc;
+let flag = false;
+let gl, canvas, choice;
+let bgLoc, hgLoc, cgLoc, hueLoc;
 let paBuffer, pbBuffer, pcBuffer;
+let hue = 0.0, sat = 0.0, val = 0.0;
 
 const pointsa = [
 	-1.0,  1.0,
@@ -71,11 +62,11 @@ window.onload = () => {
   gl.bindBuffer(gl.ARRAY_BUFFER, paBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsa), gl.STATIC_DRAW);
 
-	h_loc = gl.getUniformLocation(pa, 'h');
-	box_g_loc = gl.getUniformLocation(pa, 'g');
+	hueLoc = gl.getUniformLocation(pa, 'h');
+	bgLoc = gl.getUniformLocation(pa, 'g');
 	gl.useProgram(pa);
-	gl.uniform1f(h_loc, 0.0);
-	gl.uniform1f(box_g_loc, 1.0);
+	gl.uniform1f(hueLoc, 0.0);
+	gl.uniform1f(bgLoc, 1.0);
 
 	// ========== Part B ========== // 
 	pb = initShaders(gl, 'vertex-shader-b', 'fragment-shader-b');
@@ -85,9 +76,9 @@ window.onload = () => {
   gl.bindBuffer(gl.ARRAY_BUFFER, pbBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsb), gl.STATIC_DRAW);
 
-	hue_g_loc = gl.getUniformLocation(pb, 'g');
+	hgLoc = gl.getUniformLocation(pb, 'g');
 	gl.useProgram(pb);
-	gl.uniform1f(hue_g_loc, 1.0);
+	gl.uniform1f(hgLoc, 1.0);
 	
 	// ========== Part C ========== // 
 	pc = initShaders(gl, 'vertex-shader-c', 'fragment-shader-c');
@@ -97,11 +88,11 @@ window.onload = () => {
   gl.bindBuffer(gl.ARRAY_BUFFER, pcBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsc), gl.STATIC_DRAW);
 
-	chosen_fc_loc = gl.getUniformLocation(pc, 'fc');
-	chosen_g_loc = gl.getUniformLocation(pc, 'g');
+	choice = gl.getUniformLocation(pc, 'fc');
+	cgLoc = gl.getUniformLocation(pc, 'g');
 	gl.useProgram(pc);
-	gl.uniform3f(chosen_fc_loc, 0.0, 0.0, 0.0);
-	gl.uniform1f(chosen_g_loc, 1.0);
+	gl.uniform3f(choice, 0.0, 0.0, 0.0);
+	gl.uniform1f(cgLoc, 1.0);
 	
 	// ========== Event Handlers ========== // 
 	canvas.onmousedown = e => setScene(e);
@@ -128,32 +119,32 @@ const render = () => {
 			}
 
 			gl.useProgram(pa);
-			gl.uniform1f(h_loc, hue);
+			gl.uniform1f(hueLoc, hue);
 		}
 		
 		if (color.x < 0.75 * canvas.width && color.y < 0.75 * canvas.height) {
-			sat_pc = Math.floor(100 - color.y / (canvas.height * 0.75) * 101);
-			val_pc = Math.floor(color.x / (canvas.width * 0.75) * 101);
+			sat = Math.floor(100 - color.y / (canvas.height * 0.75) * 101);
+			val = Math.floor(color.x / (canvas.width * 0.75) * 101);
 		}
 		
 		let r = 0.0, g = 0.0, b = 0.0;
-		const saturation = (val_pc * 0.01) * (sat_pc * 0.01);
-		const hue_dash = hue / 60.0;
-		const x = saturation * (1.0 - Math.abs (hue_dash % 2.0 - 1.0));
+		const saturation = (val * 0.01) * (sat * 0.01);
+		const scale = hue / 60.0;
+		const x = saturation * (1.0 - Math.abs (scale % 2.0 - 1.0));
 
-		if (hue_dash < 1.0) {
+		if (scale < 1.0) {
 			r = saturation;
 			g = x;
-		} else if (hue_dash < 2.0) {
+		} else if (scale < 2.0) {
 			r = x;
 			g = saturation;
-		} else if (hue_dash < 3.0) {
+		} else if (scale < 3.0) {
 			g = saturation;
 			b = x;
-		} else if (hue_dash < 4.0) {
+		} else if (scale < 4.0) {
 			g = x;
 			b = saturation;
-		} else if (hue_dash < 5.0) {
+		} else if (scale < 5.0) {
 			r = x;
 			b = saturation;
 		} else {
@@ -161,12 +152,12 @@ const render = () => {
 			b = x;
 		}
 
-		r += (val_pc * 0.01) - saturation;
-		g += (val_pc * 0.01) - saturation;
-		b += (val_pc * 0.01) - saturation;
+		r += (val * 0.01) - saturation;
+		g += (val * 0.01) - saturation;
+		b += (val * 0.01) - saturation;
 		
 		gl.useProgram(pc);
-		gl.uniform3f(chosen_fc_loc, r, g, b);
+		gl.uniform3f(choice, r, g, b);
 
 		const rgb = val => Math.floor(val * 255.0);
 		const getHex = d => {
