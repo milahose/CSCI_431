@@ -2,9 +2,8 @@
 
 let gl; 
 let canvas;
+
 var get_pixel_flag = false;
-var colour_x;
-var colour_y;
 var chosen_fc_loc;
 var box_g_loc;
 var hue_g_loc;
@@ -13,10 +12,12 @@ var h_loc;
 var hue_deg = 0.0;
 var sat_pc = 0.0;
 var val_pc = 0.0;
+
 let pa, pb, pc;
+let color = {};
 let paBuffer, pbBuffer, pcBuffer;
 
-var data = [
+const pointsa = [
 	-1.0,  1.0,
 	-1.0, -1.0,
 	 1.0,  1.0,
@@ -25,7 +26,7 @@ var data = [
 	 1.0, -1.0,
 ];
 
-var data_hue = [
+const pointsb = [
 	1.0,  1.0, 1.0, 0.0, 0.0,
 	-1.0,  1.0, 1.0, 0.0, 0.0,
 	1.0,  0.667, 1.0, 0.0, 1.0,
@@ -42,7 +43,7 @@ var data_hue = [
 	-1.0, -1.0, 1.0, 0.0, 0.0
 ];
 
-var data_chosen = [
+const pointsc = [
 	-1.0,  1.0,
 	-1.0, -1.0,
 	 1.0,  1.0,
@@ -68,7 +69,7 @@ window.onload = () => {
 	
 	paBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, paBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(data), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsa), gl.STATIC_DRAW);
 
 	h_loc = gl.getUniformLocation (pa, "h");
 	box_g_loc = gl.getUniformLocation (pa, "g");
@@ -82,7 +83,7 @@ window.onload = () => {
 	
 	pbBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, pbBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(data_hue), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsb), gl.STATIC_DRAW);
 
 	hue_g_loc = gl.getUniformLocation (pb, "g");
 	gl.useProgram (pb);
@@ -94,7 +95,7 @@ window.onload = () => {
 
 	pcBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, pcBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(data_chosen), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsc), gl.STATIC_DRAW);
 
 	chosen_fc_loc = gl.getUniformLocation (pc, "fc");
 	chosen_g_loc = gl.getUniformLocation (pc, "g");
@@ -115,10 +116,10 @@ window.onload = () => {
 		}
 		left += window.pageXOffset;
 		top -= window.pageYOffset;
-		colour_x = e.clientX - left;
-		colour_y = (e.clientY - top);
+		color.x = e.clientX - left;
+		color.y = (e.clientY - top);
 
-		if (colour_x >= canvas.width || colour_y >= canvas.height) {
+		if (color.x >= canvas.width || color.y >= canvas.height) {
 			return;
 		}
 		render();
@@ -139,9 +140,9 @@ window.onload = () => {
 		}
 		left += window.pageXOffset;
 		top -= window.pageYOffset;
-		colour_x = e.clientX - left;
-		colour_y = (e.clientY - top);
-		if (colour_x >= canvas.width || colour_y >= canvas.height) {
+		color.x = e.clientX - left;
+		color.y = (e.clientY - top);
+		if (color.x >= canvas.width || color.y >= canvas.height) {
 			return;
 		}
 		render();
@@ -177,11 +178,11 @@ function render() {
 
 	if (get_pixel_flag) {
 		// hue picker
-		if (colour_x > 0.875 * canvas.width && colour_y < 0.75 * canvas.height) {
+		if (color.x > 0.875 * canvas.width && color.y < 0.75 * canvas.height) {
 			var pixel = new Uint8Array (1 * 1 * 4); // 4 channels 1x1 size
 			gl.readPixels (
-				colour_x,
-				canvas.height - colour_y,
+				color.x,
+				canvas.height - color.y,
 				1,
 				1,
 				gl.RGBA,
@@ -189,7 +190,7 @@ function render() {
 				pixel
 			);
 			
-			hue_deg = Math.floor (360 - (colour_y / (0.75 * canvas.height)) * 361);
+			hue_deg = Math.floor (360 - (color.y / (0.75 * canvas.height)) * 361);
 			// hack to make to work all the way to pure red at the top without falling off
 			if (hue_deg == 360) {
 				hue_r = 1.0;
@@ -202,9 +203,9 @@ function render() {
 		}
 		
 		// main SV box
-		if (colour_x < 0.75 * canvas.width && colour_y < 0.75 * canvas.height) {
-			sat_pc = Math.floor (100 - colour_y / (canvas.height * 0.75) * 101);
-			val_pc = Math.floor (colour_x / (canvas.width * 0.75) * 101);
+		if (color.x < 0.75 * canvas.width && color.y < 0.75 * canvas.height) {
+			sat_pc = Math.floor (100 - color.y / (canvas.height * 0.75) * 101);
+			val_pc = Math.floor (color.x / (canvas.width * 0.75) * 101);
 		}
 		
 		var chroma = (val_pc * 0.01) * (sat_pc * 0.01);
