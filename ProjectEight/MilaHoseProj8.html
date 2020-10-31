@@ -21,32 +21,32 @@
       varying vec2 vs;
 
       void main () {
-        float chroma = vs.x * vs.y;
+        float saturation = vs.x * vs.y;
         float h_dash = h / 60.0;
-        float x = chroma * (1.0 - abs (mod (h_dash, 2.0) - 1.0));
         vec3 rgb = vec3 (0.0, 0.0, 0.0);
+        float x = saturation * (1.0 - abs (mod (h_dash, 2.0) - 1.0));
 
         if (h_dash < 1.0) {
-          rgb.r = chroma;
+          rgb.r = saturation;
           rgb.g = x;
         } else if (h_dash < 2.0) {
           rgb.r = x;
-          rgb.g = chroma;
+          rgb.g = saturation;
         } else if (h_dash < 3.0) {
-          rgb.g = chroma;
+          rgb.g = saturation;
           rgb.b = x;
         } else if (h_dash < 4.0) {
           rgb.g = x;
-          rgb.b = chroma;
+          rgb.b = saturation;
         } else if (h_dash < 5.0) {
           rgb.r = x;
-          rgb.b = chroma;
+          rgb.b = saturation;
         } else {
-          rgb.r = chroma;
+          rgb.r = saturation;
           rgb.b = x;
         }
 
-        float minv = vs.x - chroma;
+        float minv = vs.x - saturation;
         rgb += minv;
         vec3 gamma = vec3 (g, g, g);
 
@@ -111,7 +111,6 @@
     <script type="text/javascript" src="webgl-utils.js"></script>
     <script type="text/javascript" src="initShaders.js"></script>
     <script type="text/javascript" src="MV.js"></script>
-    <script src="colour_widget.js"></script>
-    <script src="main.js"></script>
+    <script src="MilaHoseProj8.js"></script>
   </body>
 </html>

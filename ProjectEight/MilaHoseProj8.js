@@ -2,121 +2,224 @@
 
 let gl; 
 let canvas;
-let program;
-let modelViewMatrix;
-let projectionMatrix;
-let modelViewMatrixLoc;
 
-let points = [];
-let colors = [];
+let flag = false;
+var chosen_fc_loc;
+let box_g_loc;
+let hue_g_loc;
+let chosen_g_loc;
+let h_loc;
+let hue = 0.0;
+let sat_pc = 0.0;
+let val_pc = 0.0;
 
+let pa, pb, pc;
+let color = {};
+let paBuffer, pbBuffer, pcBuffer;
+
+const pointsa = [
+	-1.0,  1.0,
+	-1.0, -1.0,
+	 1.0,  1.0,
+	 1.0,  1.0,
+	-1.0, -1.0,
+	 1.0, -1.0,
+];
+
+const pointsb = [
+	1.0,  1.0, 1.0, 0.0, 0.0,
+	-1.0,  1.0, 1.0, 0.0, 0.0,
+	1.0,  0.667, 1.0, 0.0, 1.0,
+	-1.0,  0.667, 1.0, 0.0, 1.0,
+	1.0,  0.333, 0.0, 0.0, 1.0,
+	-1.0,  0.333, 0.0, 0.0, 1.0,
+	1.0,  0.0, 0.0, 1.0, 1.0,
+	-1.0,  0.0, 0.0, 1.0, 1.0,
+	1.0, -0.333, 0.0, 1.0, 0.0,
+	-1.0, -0.333, 0.0, 1.0, 0.0,
+	1.0, -0.667, 1.0, 1.0, 0.0,
+	-1.0, -0.667, 1.0, 1.0, 0.0,
+	1.0, -1.0, 1.0, 0.0, 0.0,
+	-1.0, -1.0, 1.0, 0.0, 0.0
+];
+
+const pointsc = [
+	-1.0,  1.0,
+	-1.0, -1.0,
+	 1.0,  1.0,
+	 1.0,  1.0,
+	-1.0, -1.0,
+	 1.0, -1.0
+];
 
 window.onload = () => {
   canvas = document.getElementById('gl-canvas');
   
   gl = WebGLUtils.setupWebGL(canvas);
-  if (!gl) alert('WebGL is not available');
+	if (!gl) alert('WebGL is not available');
 
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(1.0, 1.0, 1.0, 1.0);
-  
-  gl.enable(gl.DEPTH_TEST);
+	gl.viewport(0, 0, canvas.width, canvas.height);
+	gl.clearColor(0.2, 0.2, 0.2, 0.0);
 
-	//  Load shaders and initialize attribute buffers
-	program = initShaders(gl, 'vertex-shader', 'fragment-shader');
-	gl.useProgram(program);
+	gl.enable(gl.DEPTH_TEST);
 
-	colorCube();
-
-  // Create and initialize buffer objects
-  const vBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
-
-  const vPosition = gl.getAttribLocation(program, 'vPosition');
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vPosition);
-  
-  const cBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
-
-  const vColor = gl.getAttribLocation(program, 'vColor');
-  gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vColor);
-
-  document.getElementById('slider1').onchange = ({ target }) => (theta[0] = target.value);
-  document.getElementById('slider2').onchange = ({ target }) => (theta[1] = target.value);
-  document.getElementById('slider3').onchange = ({ target }) => (theta[2] = target.value);
-  document.getElementById('slider4').onchange = ({ target }) => (theta[3] = target.value);
+	// ============= Part A ========== // 
+	pa = initShaders(gl, 'vertex-shader-a', 'fragment-shader-a');
+	gl.useProgram(pa);
 	
-	modelViewMatrixLoc = gl.getUniformLocation(program, 'modelViewMatrix');
+	paBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, paBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsa), gl.STATIC_DRAW);
 
-  projectionMatrix = ortho(-10, 10, -10, 10, -10, 10);
-  gl.uniformMatrix4fv(gl.getUniformLocation(program, 'projectionMatrix'), false, flatten(projectionMatrix));
+	h_loc = gl.getUniformLocation(pa, 'h');
+	box_g_loc = gl.getUniformLocation(pa, 'g');
+	gl.useProgram(pa);
+	gl.uniform1f(h_loc, 0.0);
+	gl.uniform1f(box_g_loc, 1.0);
 
-  render();
+	// ========== Part B ========== // 
+	pb = initShaders(gl, 'vertex-shader-b', 'fragment-shader-b');
+	gl.useProgram(pb);
+	
+	pbBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, pbBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsb), gl.STATIC_DRAW);
+
+	hue_g_loc = gl.getUniformLocation(pb, 'g');
+	gl.useProgram(pb);
+	gl.uniform1f(hue_g_loc, 1.0);
+	
+	// ========== Part C ========== // 
+	pc = initShaders(gl, 'vertex-shader-c', 'fragment-shader-c');
+	gl.useProgram(pc);
+
+	pcBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, pcBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsc), gl.STATIC_DRAW);
+
+	chosen_fc_loc = gl.getUniformLocation(pc, 'fc');
+	chosen_g_loc = gl.getUniformLocation(pc, 'g');
+	gl.useProgram(pc);
+	gl.uniform3f(chosen_fc_loc, 0.0, 0.0, 0.0);
+	gl.uniform1f(chosen_g_loc, 1.0);
+	
+	// ========== Event Handlers ========== // 
+	canvas.onmousedown = e => setScene(e);
+	canvas.onmousemove = e => setScene(e);
+	document.onmouseup = () => {
+		flag = false;
+		render();
+	}
+
+	render();
 }
-
-//----------------------------------------------------------------------------
-
-const base = () => {
-  const s = scale4(BASE_WIDTH, BASE_HEIGHT, BASE_WIDTH);
-  const instanceMatrix = mult( translate( 2.5, 0.5 * BASE_HEIGHT, 0.0 ), s);
-  const t = mult(modelViewMatrix, instanceMatrix);
-  gl.uniformMatrix4fv(modelViewMatrixLoc,  false, flatten(t) );
-  gl.drawArrays( gl.TRIANGLES, 0, NUM_VERTICES );
-}
-
-//----------------------------------------------------------------------------
-
-const lowerArm = () => {
-  const s = scale4(LOWER_ARM_WIDTH, LOWER_ARM_HEIGHT, LOWER_ARM_WIDTH);
-  const instanceMatrix = mult( translate( 0.0, 0.5 * LOWER_ARM_HEIGHT, 0.0 ), s);
-  const t = mult(modelViewMatrix, instanceMatrix);
-  gl.uniformMatrix4fv( modelViewMatrixLoc,  false, flatten(t));
-  gl.drawArrays( gl.TRIANGLES, 0, NUM_VERTICES );
-}
-
-//----------------------------------------------------------------------------
-
-const middleArm = () => {
-  const s = scale4(MIDDLE_ARM_WIDTH, MIDDLE_ARM_HEIGHT, MIDDLE_ARM_WIDTH);
-	const instanceMatrix = mult( translate( 0.0, 0.5 * MIDDLE_ARM_HEIGHT, 0.0 ), s);
-	const t = mult(modelViewMatrix, instanceMatrix);
-	gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(t));
-	gl.drawArrays( gl.TRIANGLES, 0, NUM_VERTICES );
-}
-
-//----------------------------------------------------------------------------
-
-const upperArm = () => {
-  const s = scale4(UPPER_ARM_WIDTH, UPPER_ARM_HEIGHT, UPPER_ARM_WIDTH);
-  const instanceMatrix = mult(translate( 0.0, 0.5 * UPPER_ARM_HEIGHT, 0.0 ), s);
-  const t = mult(modelViewMatrix, instanceMatrix);
-  gl.uniformMatrix4fv( modelViewMatrixLoc,  false, flatten(t));
-  gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES);
-}
-
-//----------------------------------------------------------------------------
 
 const render = () => {
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	buildProgram();
+	if (flag) {
+		if (color.x > 0.875 * canvas.width && color.y < 0.75 * canvas.height) {
+			gl.readPixels(color.x, canvas.height - color.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(1 * 1 * 4));
+			hue = Math.floor(360 - (color.y / (0.75 * canvas.height)) * 361);
 
-  modelViewMatrix = rotate(theta[Base], 0, 1, 0);
-  base();
+			if (hue === 360) {
+				hue_r = 1.0;
+				hue_g = 0.0;
+				hue_b = 0.0;
+			}
 
-  modelViewMatrix = mult(modelViewMatrix, translate(0.0, BASE_HEIGHT, 0.0));
-  modelViewMatrix = mult(modelViewMatrix, rotate(theta[LowerArm], 0, 0, 1 ));
-  lowerArm();
+			gl.useProgram(pa);
+			gl.uniform1f(h_loc, hue);
+		}
+		
+		if (color.x < 0.75 * canvas.width && color.y < 0.75 * canvas.height) {
+			sat_pc = Math.floor(100 - color.y / (canvas.height * 0.75) * 101);
+			val_pc = Math.floor(color.x / (canvas.width * 0.75) * 101);
+		}
+		
+		let r = 0.0, g = 0.0, b = 0.0;
+		const saturation = (val_pc * 0.01) * (sat_pc * 0.01);
+		const hue_dash = hue / 60.0;
+		const x = saturation * (1.0 - Math.abs (hue_dash % 2.0 - 1.0));
 
-  modelViewMatrix = mult(modelViewMatrix, translate(0.0, LOWER_ARM_HEIGHT, 0.0));
-  modelViewMatrix = mult(modelViewMatrix, rotate(theta[MiddleArm], 0, 0, 1) );
-  middleArm();
-  
-  modelViewMatrix = mult(modelViewMatrix, translate(0.0, MIDDLE_ARM_HEIGHT, 0.0));
-  modelViewMatrix = mult(modelViewMatrix, rotate(theta[UpperArm], 0, 0, 1));
+		if (hue_dash < 1.0) {
+			r = saturation;
+			g = x;
+		} else if (hue_dash < 2.0) {
+			r = x;
+			g = saturation;
+		} else if (hue_dash < 3.0) {
+			g = saturation;
+			b = x;
+		} else if (hue_dash < 4.0) {
+			g = x;
+			b = saturation;
+		} else if (hue_dash < 5.0) {
+			r = x;
+			b = saturation;
+		} else {
+			r = saturation;
+			b = x;
+		}
 
-  upperArm();
-  requestAnimFrame(render);
+		r += (val_pc * 0.01) - saturation;
+		g += (val_pc * 0.01) - saturation;
+		b += (val_pc * 0.01) - saturation;
+		
+		gl.useProgram(pc);
+		gl.uniform3f(chosen_fc_loc, r, g, b);
+
+		const rgb = val => Math.floor(val * 255.0);
+		const getHex = d => {
+			let hex = Number(d).toString(16).toUpperCase();
+			while (hex.length < 2) hex = `0${hex}`;
+			return hex;
+		}
+
+		document.getElementById('rgb').innerHTML = `${rgb(r)}, ${rgb(g)}, ${rgb(b)}`;
+		document.getElementById('hex').innerHTML = `#${getHex(rgb(r))}${getHex(rgb(g))}${getHex(rgb(b))}`;
+	}
+}
+
+const setScene = e => {
+	flag = e.type === 'mousedown' ? true : (e.type === 'mouseup' ? false : flag);
+	let currCanvas = canvas;
+	let top = 0, left = 0;
+
+	while (currCanvas && currCanvas.tagName !== 'body') {
+		top += currCanvas.offsetTop;
+		left += currCanvas.offsetLeft;
+		currCanvas = currCanvas.offsetParent;
+	}
+	
+	left += window.pageXOffset;
+	top -= window.pageYOffset;
+	color.x = e.clientX - left;
+	color.y = (e.clientY - top);
+	render();
+}
+
+const buildProgram = () => {
+	gl.useProgram(pa);
+	gl.bindBuffer(gl.ARRAY_BUFFER, paBuffer);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.disableVertexAttribArray(0);
+	
+	gl.useProgram(pb);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pbBuffer);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 20, 0);
+	gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 20, 8);
+	gl.enableVertexAttribArray(0);
+	gl.enableVertexAttribArray(1);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 14);
+	gl.disableVertexAttribArray(0);
+	gl.disableVertexAttribArray(1);
+	
+	gl.useProgram(pc);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pcBuffer);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.disableVertexAttribArray(0);
 }
