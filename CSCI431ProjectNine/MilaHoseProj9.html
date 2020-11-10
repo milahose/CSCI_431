@@ -1,64 +1,115 @@
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Computer Graphics Project 9</title>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Graphics Project 9</title>
 
-  <script id="vertex-shader" type="x-shader/x-vertex">
-    attribute  vec4 vPosition;
-    attribute  vec4 vColor;
-    varying vec4 fColor;
+    <script id="program-va" type="x-shader/x-vertex">
+      attribute vec2 point;
+      varying vec2 vs;
+      void main () {
+        vs.x = 0.5 * (point.x + 1.0);
+        vs.y = 0.5 * (point.y + 1.0);
+        gl_Position = vec4 (point.x * 0.75 - 0.25, point.y * 0.75 + 0.25, 0.0, 1.0);
+      }
+    </script>
 
-    uniform mat4 modelViewMatrix;
-    uniform mat4 projectionMatrix;
+    <script id="program-fa" type="x-shader/x-fragment">
+      precision mediump float;
+      uniform float h;
+      uniform float g;
+      varying vec2 vs;
 
-    void main() {
-      fColor = vColor;
-      gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-    }
-  </script>
-    
-  <script id="fragment-shader" type="x-shader/x-fragment">
-    precision mediump float;
-    varying vec4 fColor;
+      void main () {
+        float saturation = vs.x * vs.y;
+        float scale = h / 60.0;
+        vec3 rgb = vec3 (0.0, 0.0, 0.0);
+        float x = saturation * (1.0 - abs (mod(scale, 2.0) - 1.0));
 
-    void main() {
-      gl_FragColor = fColor;
-    }
-  </script>
+        if (scale < 1.0) {
+          rgb.r = saturation;
+          rgb.g = x;
+        } else if (scale < 2.0) {
+          rgb.r = x;
+          rgb.g = saturation;
+        } else if (scale < 3.0) {
+          rgb.g = saturation;
+          rgb.b = x;
+        } else if (scale < 4.0) {
+          rgb.g = x;
+          rgb.b = saturation;
+        } else if (scale < 5.0) {
+          rgb.r = x;
+          rgb.b = saturation;
+        } else {
+          rgb.r = saturation;
+          rgb.b = x;
+        }
 
-  <script type="text/javascript" src="webgl-utils.js"></script>
-  <script type="text/javascript" src="initShaders.js"></script>
-  <script type="text/javascript" src="MV.js"></script>
-  <script type="text/javascript" src="MilaHoseProj9.js"></script>
-</head>
+        rgb += vs.x - saturation;
+        vec3 gamma = vec3(g, g, g);
+
+        gl_FragColor = vec4(pow(rgb, 1.0 / gamma), 1.0);
+      }
+    </script>
+
+    <script id="program-vb" type="x-shader/x-vertex">
+      attribute vec2 p;
+      attribute vec3 c;
+      varying vec3 fc;
+      void main () {
+        fc = c;
+        gl_Position = vec4(p.x * 0.125 + 0.875, p.y * 0.75 + 0.25, 0.0, 1.0);
+      }
+    </script>
+
+    <script id="program-fb" type="x-shader/x-fragment">
+      precision mediump float;
+      varying vec3 fc;
+      uniform float g;
+      void main () {
+        vec3 gamma = vec3(g, g, g);
+        gl_FragColor = vec4(pow (fc, 1.0 / gamma), 1.0);
+      }
+    </script>
+
+    <script id="program-vc" type="x-shader/x-vertex">
+      attribute vec2 p;
+      void main () {
+        gl_Position = vec4(p.x, p.y * 0.2 - 0.75, 0.0, 1.0);
+      }
+    </script>
+
+    <script id="program-fc" type="x-shader/x-fragment">
+      precision mediump float;
+      uniform vec3 fc;
+      uniform float g;
+      void main () {
+        vec3 gamma = vec3(g, g, g);
+        gl_FragColor = vec4(pow (fc, 1.0 / gamma), 1.0);
+      }
+    </script>
+  </head>
   <body>
-    <div style="margin-bottom: 20px">
-      body angle -180 
-      <input id="slider1" type="range" min="-180" max="180" step="10" value="0" />
-      180
-    </div>
-      
-    <div style="margin-bottom: 20px">
-      lower arm angle -180 
-      <input id="slider2" type="range" min="-180" max="180" step="10" value="0" />
-      180
-    </div>
-
-    <div style="margin-bottom: 20px">
-      middle arm angle -180 
-      <input id="slider4" type="range" min="-180" max="180" step="10" value="0" />
-      180
-    </div>
+    <h2 style="text-align: center;">Color Picker</h2>
     
-    <div style="margin-bottom: 20px">
-      upper arm angle -180 
-      <input id="slider3" type="range" min="-180" max="180" step="10" value="0" />
-      180
+    <div style="text-align: center;">
+      <canvas id="paint" width=256 height=256>
+        Sorry, your browser does not support this program.
+      </canvas>
+
+      <p>
+        <strong>RGB Code</strong>: <span id="rgb">0, 0, 0</span>
+      </p>
+
+      <p>
+        <strong>Hex Code</strong>: <span id="hex">#000000</span>
+      </p>
     </div>
 
-    <canvas id="gl-canvas" width="512" height="512">
-      Oops ... your browser doesn't support the HTML5 canvas element
-    </canvas>
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="initShaders.js"></script>
+    <script type="text/javascript" src="MV.js"></script>
+    <script src="MilaHoseProj8.js"></script>
   </body>
 </html>
