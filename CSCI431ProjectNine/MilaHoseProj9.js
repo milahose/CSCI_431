@@ -1,205 +1,216 @@
 'use strict';
 
-let gl; 
-let canvas;
-let program;
-let vBuffer;
-let cBuffer;
-let modelViewMatrix;
-let projectionMatrix;
-let modelViewMatrixLoc;
+let color = {};
+let pa, pb, pc;
+let flag = false;
+let gl, cv, choice;
+let bgLoc, hgLoc, cgLoc, hueLoc;
+let paBuffer, pbBuffer, pcBuffer;
+let hue = 0.0, sat = 0.0, val = 0.0;
 
-let points = [];
-let colors = [];
-
-// Parameters controlling the size of the Robot's arm
-const BASE_HEIGHT = 2.0;
-const BASE_WIDTH = 5.0;
-const LOWER_ARM_HEIGHT = 5.0;
-const LOWER_ARM_WIDTH = 0.5;
-const MIDDLE_ARM_HEIGHT = 5.0;
-const MIDDLE_ARM_WIDTH = 0.5;
-const UPPER_ARM_HEIGHT = 5.0;
-const UPPER_ARM_WIDTH  = 0.5;
-const NUM_VERTICES = 36; // (6 faces)(2 triangles/face)(3 vertices/triangle)
-
-const vertices = [
-  vec4( -0.5, -0.5,  0.5, 1.0 ),
-  vec4( -0.5,  0.5,  0.5, 1.0 ),
-  vec4(  0.5,  0.5,  0.5, 1.0 ),
-  vec4(  0.5, -0.5,  0.5, 1.0 ),
-  vec4( -0.5, -0.5, -0.5, 1.0 ),
-  vec4( -0.5,  0.5, -0.5, 1.0 ),
-  vec4(  0.5,  0.5, -0.5, 1.0 ),
-  vec4(  0.5, -0.5, -0.5, 1.0 )
+const pointsa = [
+	-1.0,  1.0,
+	-1.0, -1.0,
+	 1.0,  1.0,
+	 1.0,  1.0,
+	-1.0, -1.0,
+	 1.0, -1.0,
 ];
 
-// RGBA colors
-const vertexColors = [
-  vec4( 0.0, 0.0, 0.0, 1.0 ),  // black
-  vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
-  vec4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
-  vec4( 0.0, 1.0, 0.0, 1.0 ),  // green
-  vec4( 0.0, 0.0, 1.0, 1.0 ),  // blue
-  vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
-  vec4( 1.0, 1.0, 1.0, 1.0 ),  // white
-  vec4( 0.0, 1.0, 1.0, 1.0 )   // cyan
+const pointsb = [
+	1.0,  1.0, 1.0, 0.0, 0.0,
+	-1.0,  1.0, 1.0, 0.0, 0.0,
+	1.0,  0.667, 1.0, 0.0, 1.0,
+	-1.0,  0.667, 1.0, 0.0, 1.0,
+	1.0,  0.333, 0.0, 0.0, 1.0,
+	-1.0,  0.333, 0.0, 0.0, 1.0,
+	1.0,  0.0, 0.0, 1.0, 1.0,
+	-1.0,  0.0, 0.0, 1.0, 1.0,
+	1.0, -0.333, 0.0, 1.0, 0.0,
+	-1.0, -0.333, 0.0, 1.0, 0.0,
+	1.0, -0.667, 1.0, 1.0, 0.0,
+	-1.0, -0.667, 1.0, 1.0, 0.0,
+	1.0, -1.0, 1.0, 0.0, 0.0,
+	-1.0, -1.0, 1.0, 0.0, 0.0
 ];
 
-// Array of rotation angles (in degrees) for each rotation axis
-const Base = 0;
-const LowerArm = 1;
-const MiddleArm = 2;
-const UpperArm = 3;
-const theta = [ 0, 0, 0, 0];
-const angle = 0;
-
-//----------------------------------------------------------------------------
-
-const quad = (a, b, c, d) => {
-  colors.push(vertexColors[a]);
-  points.push(vertices[a]);
-  colors.push(vertexColors[a]);
-  points.push(vertices[b]);
-  colors.push(vertexColors[a]);
-  points.push(vertices[c]);
-  colors.push(vertexColors[a]);
-  points.push(vertices[a]);
-  colors.push(vertexColors[a]);
-  points.push(vertices[c]);
-  colors.push(vertexColors[a]);
-  points.push(vertices[d]);
-}
-
-const colorCube = () => {
-  quad( 1, 0, 3, 2 );
-  quad( 2, 3, 7, 6 );
-  quad( 3, 0, 4, 7 );
-  quad( 6, 5, 1, 2 );
-  quad( 4, 5, 6, 7 );
-  quad( 5, 4, 0, 1 );
-}
-
-//____________________________________________
-
-// Remmove when scale in MV.js supports scale matrices
-const scale4 = (a, b, c) => {
-  const result = mat4();
-  result[0][0] = a;
-  result[1][1] = b;
-  result[2][2] = c;
-  return result;
-}
-
-
-//--------------------------------------------------
+const pointsc = [
+	-1.0,  1.0,
+	-1.0, -1.0,
+	 1.0,  1.0,
+	 1.0,  1.0,
+	-1.0, -1.0,
+	 1.0, -1.0
+];
 
 window.onload = () => {
-  canvas = document.getElementById('gl-canvas');
+  cv = document.getElementById('paint');
   
-  gl = WebGLUtils.setupWebGL(canvas);
-  if (!gl) alert('WebGL is not available');
+  gl = WebGLUtils.setupWebGL(cv);
+	if (!gl) alert('WebGL is not available');
 
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(1.0, 1.0, 1.0, 1.0);
-  
-  gl.enable(gl.DEPTH_TEST);
+	gl.viewport(0, 0, cv.width, cv.height);
+	gl.clearColor(0.2, 0.2, 0.2, 0.0);
 
-	//  Load shaders and initialize attribute buffers
-	program = initShaders(gl, 'vertex-shader', 'fragment-shader');
-	gl.useProgram(program);
+	gl.enable(gl.DEPTH_TEST);
 
-	colorCube();
-
-  // Create and initialize buffer objects
-  const vBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
-
-  const vPosition = gl.getAttribLocation(program, 'vPosition');
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vPosition);
-  
-  const cBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
-
-  const vColor = gl.getAttribLocation(program, 'vColor');
-  gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vColor);
-
-  document.getElementById('slider1').onchange = ({ target }) => (theta[0] = target.value);
-  document.getElementById('slider2').onchange = ({ target }) => (theta[1] = target.value);
-  document.getElementById('slider3').onchange = ({ target }) => (theta[2] = target.value);
-  document.getElementById('slider4').onchange = ({ target }) => (theta[3] = target.value);
+	// ============= Part A ========== // 
+	pa = initShaders(gl, 'program-va', 'program-fa');
+	gl.useProgram(pa);
 	
-	modelViewMatrixLoc = gl.getUniformLocation(program, 'modelViewMatrix');
+	paBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, paBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsa), gl.STATIC_DRAW);
 
-  projectionMatrix = ortho(-10, 10, -10, 10, -10, 10);
-  gl.uniformMatrix4fv(gl.getUniformLocation(program, 'projectionMatrix'), false, flatten(projectionMatrix));
+	hueLoc = gl.getUniformLocation(pa, 'h');
+	bgLoc = gl.getUniformLocation(pa, 'g');
+	gl.useProgram(pa);
+	gl.uniform1f(hueLoc, 0.0);
+	gl.uniform1f(bgLoc, 1.0);
 
-  render();
+	// ========== Part B ========== // 
+	pb = initShaders(gl, 'program-vb', 'program-fb');
+	gl.useProgram(pb);
+	
+	pbBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, pbBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsb), gl.STATIC_DRAW);
+
+	hgLoc = gl.getUniformLocation(pb, 'g');
+	gl.useProgram(pb);
+	gl.uniform1f(hgLoc, 1.0);
+	
+	// ========== Part C ========== // 
+	pc = initShaders(gl, 'program-vc', 'program-fc');
+	gl.useProgram(pc);
+
+	pcBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, pcBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsc), gl.STATIC_DRAW);
+
+	choice = gl.getUniformLocation(pc, 'fc');
+	cgLoc = gl.getUniformLocation(pc, 'g');
+	gl.useProgram(pc);
+	gl.uniform3f(choice, 0.0, 0.0, 0.0);
+	gl.uniform1f(cgLoc, 1.0);
+	
+	// ========== Event Handlers ========== // 
+	cv.onmousedown = e => setScene(e);
+	cv.onmousemove = e => setScene(e);
+	document.onmouseup = () => {
+		flag = false;
+		render();
+	}
+
+	render();
 }
-
-//----------------------------------------------------------------------------
-
-const base = () => {
-  const s = scale4(BASE_WIDTH, BASE_HEIGHT, BASE_WIDTH);
-  const instanceMatrix = mult( translate( 2.5, 0.5 * BASE_HEIGHT, 0.0 ), s);
-  const t = mult(modelViewMatrix, instanceMatrix);
-  gl.uniformMatrix4fv(modelViewMatrixLoc,  false, flatten(t) );
-  gl.drawArrays( gl.TRIANGLES, 0, NUM_VERTICES );
-}
-
-//----------------------------------------------------------------------------
-
-const lowerArm = () => {
-  const s = scale4(LOWER_ARM_WIDTH, LOWER_ARM_HEIGHT, LOWER_ARM_WIDTH);
-  const instanceMatrix = mult( translate( 0.0, 0.5 * LOWER_ARM_HEIGHT, 0.0 ), s);
-  const t = mult(modelViewMatrix, instanceMatrix);
-  gl.uniformMatrix4fv( modelViewMatrixLoc,  false, flatten(t));
-  gl.drawArrays( gl.TRIANGLES, 0, NUM_VERTICES );
-}
-
-//----------------------------------------------------------------------------
-
-const middleArm = () => {
-  const s = scale4(MIDDLE_ARM_WIDTH, MIDDLE_ARM_HEIGHT, MIDDLE_ARM_WIDTH);
-	const instanceMatrix = mult( translate( 0.0, 0.5 * MIDDLE_ARM_HEIGHT, 0.0 ), s);
-	const t = mult(modelViewMatrix, instanceMatrix);
-	gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(t));
-	gl.drawArrays( gl.TRIANGLES, 0, NUM_VERTICES );
-}
-
-//----------------------------------------------------------------------------
-
-const upperArm = () => {
-  const s = scale4(UPPER_ARM_WIDTH, UPPER_ARM_HEIGHT, UPPER_ARM_WIDTH);
-  const instanceMatrix = mult(translate( 0.0, 0.5 * UPPER_ARM_HEIGHT, 0.0 ), s);
-  const t = mult(modelViewMatrix, instanceMatrix);
-  gl.uniformMatrix4fv( modelViewMatrixLoc,  false, flatten(t));
-  gl.drawArrays(gl.TRIANGLES, 0, NUM_VERTICES);
-}
-
-//----------------------------------------------------------------------------
 
 const render = () => {
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	buildProgram();
+	if (flag) {
+		if (color.x > 0.875 * cv.width && color.y < 0.75 * cv.height) {
+			gl.readPixels(color.x, cv.height - color.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(1 * 1 * 4));
+			hue = Math.floor(360 - (color.y / (0.75 * cv.height)) * 361);
 
-  modelViewMatrix = rotate(theta[Base], 0, 1, 0);
-  base();
+			if (hue === 360) {
+				hue_r = 1.0;
+				hue_g = 0.0;
+				hue_b = 0.0;
+			}
 
-  modelViewMatrix = mult(modelViewMatrix, translate(0.0, BASE_HEIGHT, 0.0));
-  modelViewMatrix = mult(modelViewMatrix, rotate(theta[LowerArm], 0, 0, 1 ));
-  lowerArm();
+			gl.useProgram(pa);
+			gl.uniform1f(hueLoc, hue);
+		}
+		
+		if (color.x < 0.75 * cv.width && color.y < 0.75 * cv.height) {
+			sat = Math.floor(100 - color.y / (cv.height * 0.75) * 101);
+			val = Math.floor(color.x / (cv.width * 0.75) * 101);
+		}
+		
+		let r = 0.0, g = 0.0, b = 0.0;
+		const saturation = (val * 0.01) * (sat * 0.01);
+		const scale = hue / 60.0;
+		const x = saturation * (1.0 - Math.abs (scale % 2.0 - 1.0));
 
-  modelViewMatrix = mult(modelViewMatrix, translate(0.0, LOWER_ARM_HEIGHT, 0.0));
-  modelViewMatrix = mult(modelViewMatrix, rotate(theta[MiddleArm], 0, 0, 1) );
-  middleArm();
-  
-  modelViewMatrix = mult(modelViewMatrix, translate(0.0, MIDDLE_ARM_HEIGHT, 0.0));
-  modelViewMatrix = mult(modelViewMatrix, rotate(theta[UpperArm], 0, 0, 1));
+		if (scale < 1.0) {
+			r = saturation;
+			g = x;
+		} else if (scale < 2.0) {
+			r = x;
+			g = saturation;
+		} else if (scale < 3.0) {
+			g = saturation;
+			b = x;
+		} else if (scale < 4.0) {
+			g = x;
+			b = saturation;
+		} else if (scale < 5.0) {
+			r = x;
+			b = saturation;
+		} else {
+			r = saturation;
+			b = x;
+		}
 
-  upperArm();
-  requestAnimFrame(render);
+		r += (val * 0.01) - saturation;
+		g += (val * 0.01) - saturation;
+		b += (val * 0.01) - saturation;
+		
+		gl.useProgram(pc);
+		gl.uniform3f(choice, r, g, b);
+
+		const rgb = val => Math.floor(val * 255.0);
+		const getHex = d => {
+			let hex = Number(d).toString(16).toUpperCase();
+			while (hex.length < 2) hex = `0${hex}`;
+			return hex;
+		}
+
+		document.getElementById('rgb').innerHTML = `${rgb(r)}, ${rgb(g)}, ${rgb(b)}`;
+		document.getElementById('hex').innerHTML = `#${getHex(rgb(r))}${getHex(rgb(g))}${getHex(rgb(b))}`;
+	}
+}
+
+const setScene = e => {
+	flag = e.type === 'mousedown' ? true : (e.type === 'mouseup' ? false : flag);
+	let currcv = cv;
+	let top = 0, left = 0;
+
+	while (currcv && currcv.tagName !== 'body') {
+		top += currcv.offsetTop;
+		left += currcv.offsetLeft;
+		currcv = currcv.offsetParent;
+	}
+	
+	left += window.pageXOffset;
+	top -= window.pageYOffset;
+	color.x = e.clientX - left;
+	color.y = (e.clientY - top);
+	render();
+}
+
+const buildProgram = () => {
+	gl.useProgram(pa);
+	gl.bindBuffer(gl.ARRAY_BUFFER, paBuffer);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.disableVertexAttribArray(0);
+	
+	gl.useProgram(pb);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pbBuffer);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 20, 0);
+	gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 20, 8);
+	gl.enableVertexAttribArray(0);
+	gl.enableVertexAttribArray(1);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 14);
+	gl.disableVertexAttribArray(0);
+	gl.disableVertexAttribArray(1);
+	
+	gl.useProgram(pc);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pcBuffer);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
+	gl.enableVertexAttribArray(0);
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.disableVertexAttribArray(0);
 }
